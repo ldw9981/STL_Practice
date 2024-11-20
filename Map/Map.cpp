@@ -37,6 +37,7 @@ void TestUnorderedMap()
 	// 현재 적재율(load_factor)이 max_load_factor보다 낮으면 문제없이 요소를 추가. 
 	// 현재 적재율이 max_load_factor보다 높으면 버킷수를 늘리고 rehashing하여 재배치 한다.
 
+	// bucket_count : 준비된 버킷수 , max_size : 컨테이너가 담을 수 있는 최대 요소수( 넘으면 예외발생) ,  max_load_factor : 최대적재율
 	std::cout << "bucket_count: " << Container.bucket_count() << " max_size: " << Container.max_size() << " max load factor " << Container.max_load_factor() << std::endl;
 	for (size_t i = 0; i < 100; i++)
 	{
