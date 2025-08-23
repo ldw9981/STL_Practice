@@ -19,12 +19,32 @@ void TestMap()
         Container.insert(std::make_pair(key,value));
     }
 
-	// 
 	for (auto it = Container.begin(); it != Container.end(); it++)
 	{
 		std::cout << "Key: " << (*it).first << " Value: " << (*it).second << std::endl;
 	}
 
+	// lower_bound(x) : x 이상 기준으로 첫 원소 찾기
+	auto it_lower = Container.lower_bound(300); 
+	if (it_lower != Container.end())
+		std::cout << "lower_bound(300): " << it_lower->first << " => " << it_lower->second << "\n";
+	else
+		std::cout << "not found\n";
+
+	// upper_bound(x) : x 초과(upper)의 기준으로 첫 원소 찾기
+	auto it_upper = Container.upper_bound(3000);
+	if (it_upper != Container.end())
+		std::cout << "upper_bound(3000): " << it_upper->first << " => " << it_upper->second << "\n";
+	else
+		std::cout << "not found\n";
+
+	// equal_range(x) 는 lower_bound(x) 와 upper_bound(x) 를 pair 로 리턴한다.
+
+	// 구간의 각 경계 반복자로 구간 출력하기 
+	for (auto it = it_lower; it != it_upper; it++)
+	{
+		std::cout << "Key: " << (*it).first << " Value: " << (*it).second << std::endl;
+	}
 }
 
 void TestUnorderedMap()
@@ -60,7 +80,7 @@ void TestUnorderedMap()
 
 int main()
 {
-	//TestMap();
+	TestMap();
 	TestUnorderedMap();
 
 }
