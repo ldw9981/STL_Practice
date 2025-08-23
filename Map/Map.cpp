@@ -23,6 +23,9 @@ void TestMap()
 	{
 		std::cout << "Key: " << (*it).first << " Value: " << (*it).second << std::endl;
 	}
+	
+	// 85, 561, 600, 1247, 1354, 1408, 1456, 1673, 2795, 2799, 2811, 3467, 3594
+	// 300~3000 사이의 키를 출력하려면 lower_bound 와 upper_bound 를 사용한다.	
 
 	// lower_bound(x) : x 이상 기준으로 첫 원소 찾기
 	auto it_lower = Container.lower_bound(300); 
