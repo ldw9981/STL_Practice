@@ -3,9 +3,11 @@
 
 #include <iostream>
 #include <vector>
+#include <list>
 #include "../StaticLib/ClassA.h"
 #include "../StaticLib/Timer.h"
 #include <iostream>
+#include <chrono>
 
 using namespace std;
 
@@ -40,39 +42,70 @@ void TestReserve()
 	배열과 할당받은 메모리를 접근할때의 성능 차이. 
 	캐쉬히트와 캐쉬미스에 대하여 알아본다.
 */
-void CompareArrayAndPointer()
+void CompareVectorPointerList()
 {
-	size_t size = 1000000; 
-	std::vector<int> containerValue;
-	std::vector<int*> containerPointer;
-	containerPointer.reserve(size);
-	containerValue.reserve(size);
+	const int N = 100000;
+	volatile long long sum = 0; 
+	// 1) vector<int>
+	{
+		sum = 0;
+		std::vector<int> v;
+		v.reserve(N);
+		for (size_t i = 0; i < N; ++i)
+			v.push_back(static_cast<int>(i));
+		auto start = std::chrono::high_resolution_clock::now();
+		
+		// 인덱스 순회(연속 메모리, 캐시 효율↑)
+		for (size_t i = 0; i < v.size(); ++i)
+			sum += v[i];
 
-	for (int i = 0; i < size; i++)	//0~999999 
-	{
-		containerValue.push_back(i);
-		containerPointer.push_back( new int);
-		*containerPointer[i] = i;
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		std::cout << "std:: vector<int> time: " << diff.count() << " s\n";
 	}
-	
-	int sum = 0;
-	g_timer.Start();
-	for (size_t i = 0; i < size; i++)
-	{
-		sum += containerValue[i];
-	}	
-	g_timer.Stop();
-	cout << "Vector<int> : " << g_timer.GetElapsedTime() << "ms" << endl;
 
-	sum = 0;
-	g_timer.Start();
-	for (size_t i = 0; i < size; i++)
-	{
-		sum += *containerPointer[i];
+	// 2) vector<int*> : 각 원소를 개별 new (흩어진 메모리)
+	{		
+		sum = 0;
+		std::vector<int*> vp;
+		vp.reserve(N);
+		for (size_t i = 0; i < N; ++i) {
+			int* p = new int(static_cast<int>(i));
+			vp.push_back(p);
+		}
+		auto start = std::chrono::high_resolution_clock::now();
+		
+		for (size_t i = 0; i < vp.size(); ++i)
+			sum += *vp[i]; // 간접 참조 + 캐시 미스 가능
+
+		auto end = std::chrono::high_resolution_clock::now();
+
+		for (auto p : vp) delete p; // 누수 방지
+
+		std::chrono::duration<double> diff = end - start;
+		std::cout << "std:: vector<int*> time: " << diff.count() << " s\n";
 	}
-	g_timer.Stop();
-	cout << "Vector<int*> : " << g_timer.GetElapsedTime() << "ms" << endl;
+
+	// ===== std::list 테스트 =====
+	{
+		sum = 0;
+		std::list<int> lst;
+
+		for (int i = 0; i <N; ++i)
+			lst.push_back(i);
+
+		auto start = std::chrono::high_resolution_clock::now();
+
+		for (auto it = lst.begin(); it != lst.end(); ++it) {
+			sum += *it;
+		}
+
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		std::cout << "std::list time: " << diff.count() << " s\n";
+	}
 }
+
 
 
 void TestPushBack()
@@ -87,6 +120,6 @@ void TestEmplaceBack()
 
 int main()
 {
-	TestReserve();
-	//CompareArrayAndPointer();
+	//TestReserve();
+	CompareVectorPointerList();
 }
